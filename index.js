@@ -40,6 +40,37 @@ async function run() {
             const result = await carsCollection.insertOne(newCar);
             res.send({ result });
         });
+
+        // Update quantity by 1
+        app.put('/cars/:inventoryId', async (req, res) => {
+            const id = req.params.inventoryId;
+            const updateData = req.body;
+            const filter = { _id: ObjectId(id) };
+            const options = { upsert: true };
+            let updateDoc, newQuantity;
+
+            if (updateData.sold) {
+                newQuantity = updateData.quantity > 0 ? updateData.quantity - 1 : 0;
+                const newSold = updateData.quantity == 0 ? updateData?.sold : updateData.sold + 1;
+                updateDoc = {
+                    $set: {
+                        quantity: newQuantity,
+                        sold: newSold
+                    },
+                };
+            }
+            else {
+                const findDetails = await carsCollection.findOne(filter);
+                newQuantity = findDetails.quantity + parseInt(updateData.quantity);
+                updateDoc = {
+                    $set: {
+                        quantity: newQuantity
+                    },
+                };
+            }
+            const result = await carsCollection.updateOne(filter, updateDoc, options);
+            res.send({ result });
+        });
     }
     finally {
         // await client.close();
