@@ -5,10 +5,11 @@ import { MongoClient, ObjectId, ServerApiVersion } from 'mongodb';
 const app = express();
 const port = process.env.PORT || 5000;
 
-
+//middleware
 app.use(express.json());
 app.use(cors());
 
+//database
 const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster0.pxon5.mongodb.net/myFirstDatabase?retryWrites=true&w=majority`;
 const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology: true, serverApi: ServerApiVersion.v1 });
 
@@ -47,20 +48,22 @@ async function run() {
             const updateData = req.body;
             const filter = { _id: ObjectId(id) };
             const options = { upsert: true };
-            let updateDoc, newQuantity;
+            const findDetails = await carsCollection.findOne(filter);
+            let updateDoc, newQuantity, newSold;
 
             if (updateData.sold) {
-                newQuantity = updateData.quantity > 0 ? updateData.quantity - 1 : 0;
-                const newSold = updateData.quantity == 0 ? updateData?.sold : updateData.sold + 1;
-                updateDoc = {
-                    $set: {
-                        quantity: newQuantity,
-                        sold: newSold
-                    },
-                };
+                if (findDetails.quantity > 0) {
+                    newQuantity = parseInt(findDetails.quantity) - 1;
+                    newSold = findDetails.quantity == 0 ? findDetails?.sold : findDetails.sold + 1;
+                    updateDoc = {
+                        $set: {
+                            quantity: newQuantity,
+                            sold: newSold
+                        },
+                    };
+                }
             }
             else {
-                const findDetails = await carsCollection.findOne(filter);
                 newQuantity = findDetails.quantity + parseInt(updateData.quantity);
                 updateDoc = {
                     $set: {
