@@ -54,7 +54,7 @@ async function run() {
             if (updateData.sold) {
                 if (findDetails.quantity > 0) {
                     newQuantity = parseInt(findDetails.quantity) - 1;
-                    newSold = findDetails.quantity == 0 ? findDetails?.sold : findDetails.sold + 1;
+                    newSold = findDetails.quantity == 0 ? findDetails?.sold : parseInt(findDetails.sold) + 1;
                     updateDoc = {
                         $set: {
                             quantity: newQuantity,
@@ -81,6 +81,15 @@ async function run() {
             const query = { _id: ObjectId(id) };
             const result = await carsCollection.deleteOne(query);
             res.send(result);
+        });
+
+        //get my items
+        app.get('/my_items', async (req, res) => {
+            const emailOrUid = req.query.emailOrUid;
+            const query = { emailOrUid: emailOrUid };
+            const result = carsCollection.find(query);
+            const myItems = await result.toArray();
+            res.send(myItems);
         });
     }
     finally {
