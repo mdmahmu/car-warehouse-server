@@ -74,6 +74,14 @@ async function run() {
             const result = await carsCollection.updateOne(filter, updateDoc, options);
             res.send({ result });
         });
+
+        //deleting a item
+        app.delete('/cars/:inventoryId', async (req, res) => {
+            const id = req.params.inventoryId;
+            const query = { _id: ObjectId(id) };
+            const result = await carsCollection.deleteOne(query);
+            res.send(result);
+        });
     }
     finally {
         // await client.close();
