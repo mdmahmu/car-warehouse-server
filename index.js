@@ -65,7 +65,7 @@ async function run() {
             res.send({ result });
         });
 
-        // Update quantity by 1
+        // Update quantity and restock
         app.put('/cars/:inventoryId', async (req, res) => {
             const id = req.params.inventoryId;
             const updateData = req.body;
@@ -77,7 +77,7 @@ async function run() {
             if (updateData.sold) {
                 if (findDetails.quantity > 0) {
                     newQuantity = parseInt(findDetails.quantity) - 1;
-                    newSold = findDetails.quantity == 0 ? findDetails?.sold : parseInt(findDetails.sold) + 1;
+                    newSold = parseInt(findDetails.quantity) == 0 ? findDetails?.sold : parseInt(findDetails.sold) + 1;
                     updateDoc = {
                         $set: {
                             quantity: newQuantity,
@@ -87,7 +87,7 @@ async function run() {
                 }
             }
             else {
-                newQuantity = findDetails.quantity + parseInt(updateData.quantity);
+                newQuantity = parseInt(findDetails.quantity) + parseInt(updateData.quantity);
                 updateDoc = {
                     $set: {
                         quantity: newQuantity
